@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva de Cálculo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Visualization & Content Choices: 
+        - Funciones: Report Info (Representaciones de una función) -> Goal (Entender la conexión entre representaciones) -> Viz (Dashboard con input, gráfica de Chart.js y tabla HTML) -> Interaction (Usuario escribe una función, la app la visualiza) -> Justification (El aprendizaje activo es superior para conceptos abstractos) -> Library (Chart.js/Canvas).
+        - Límites: Report Info (Métodos de resolución de límites indeterminados) -> Goal (Comprender los pasos algebraicos) -> Viz (Acordeón con problemas y botones "Siguiente Paso") -> Interaction (Click para revelar cada paso de la solución) -> Justification (Reduce la carga cognitiva y guía al usuario a través del proceso) -> Library (HTML/CSS/JS).
+        - Consejos: Report Info (Lista de consejos) -> Goal (Informar) -> Viz (Tarjetas de contenido estilizadas) -> Interaction (Ninguna, solo lectura) -> Justification (Presentación clara y agradable) -> Library (HTML/CSS/JS).
+    -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: 500; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .step { opacity: 0; max-height: 0; overflow: hidden; transition: all 0.5s ease-in-out; }
+        .step.visible { opacity: 1; max-height: 100px; }
+        .latex { font-family: 'Times New Roman', serif; font-style: italic; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-600 mb-2">🚀 Guía Interactiva de Cálculo</h1>
+            <p class="text-lg text-gray-600">Explora Funciones y Límites de una manera visual y dinámica.</p>
+        </header>
+
+        <nav class="mb-8 border-b border-gray-200">
+            <ul class="flex justify-center -mb-px">
+                <li><a href="#" class="tab-link inline-block p-4 text-gray-500 hover:text-blue-600 hover:border-gray-300" data-tab="inicio">Inicio</a></li>
+                <li><a href="#" class="tab-link inline-block p-4 text-gray-500 hover:text-blue-600 hover:border-gray-300" data-tab="funciones">Funciones</a></li>
+                <li><a href="#" class="tab-link inline-block p-4 text-gray-500 hover:text-blue-600 hover:border-gray-300" data-tab="limites">Límites</a></li>
+                <li><a href="#" class="tab-link inline-block p-4 text-gray-500 hover:text-blue-600 hover:border-gray-300" data-tab="consejos">Consejos</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <section id="inicio" class="content-section active">
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-4 text-blue-700">Bienvenido/a a tu Asistente de Cálculo</h2>
+                    <p class="mb-4">El cálculo puede parecer complejo, pero se basa en dos ideas fundamentales: las **funciones** y los **límites**. Esta guía interactiva está diseñada para desmitificar estos conceptos.</p>
+                    <p class="mb-4">Aquí podrás:</p>
+                    <ul class="list-disc list-inside mb-4 space-y-2">
+                        <li><span class="font-semibold text-blue-600">Visualizar funciones:</span> Introduce una función y observa cómo se generan al instante su gráfica y tabla de valores.</li>
+                        <li><span class="font-semibold text-blue-600">Entender límites:</span> Resuelve problemas de límites indeterminados paso a paso para comprender la lógica detrás de cada manipulación algebraica.</li>
+                        <li><span class="font-semibold text-blue-600">Obtener consejos prácticos:</span> Descubre estrategias para abordar el estudio del cálculo con confianza.</li>
+                    </ul>
+                    <p>Usa la navegación de arriba para explorar cada sección. ¡Empecemos!</p>
+                </div>
+            </section>
+
+            <section id="funciones" class="content-section">
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-4 text-blue-700">⚙️ El Laboratorio de Funciones</h2>
+                    <p class="mb-6 text-gray-600">Una función es una regla que relaciona una entrada con una única salida. Aquí puedes ver cómo las diferentes representaciones de una función (algebraica, gráfica y numérica) están conectadas. Escribe una función simple de <span class="latex">x</span> y mira la magia.</p>
+                    
+                    <div class="flex flex-col md:flex-row gap-4 mb-6">
+                        <input type="text" id="functionInput" placeholder="Ej: x**2, 2*x + 1, 1/x" class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <button id="plotButton" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">Visualizar</button>
+                    </div>
+                    <p id="functionError" class="text-red-500 mb-4 h-5"></p>
+
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">📊 Representación Gráfica</h3>
+                            <div class="chart-container relative h-80 w-full max-w-xl mx-auto bg-gray-50 p-2 rounded-lg border">
+                                <canvas id="functionChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">🔢 Representación Numérica</h3>
+                            <div id="functionTableContainer" class="h-80 overflow-y-auto border rounded-lg">
+                                <table class="w-full text-center">
+                                    <thead class="bg-gray-100 sticky top-0">
+                                        <tr><th class="py-2 px-4"><span class="latex">x</span></th><th class="py-2 px-4"><span class="latex">f(x)</span></th></tr>
+                                    </thead>
+                                    <tbody id="functionTable">
+                                        <tr><td colspan="2" class="p-4 text-gray-500">Introduce una función para ver su tabla de valores.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-12">
+                         <h3 class="text-xl font-bold mb-4 text-blue-700">🌐 Dominio y Rango</h3>
+                         <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                                <h4 class="font-semibold">Dominio (<span class="latex">D<sub>f</sub></span>)</h4>
+                                <p>Son todos los valores posibles de entrada (<span class="latex">x</span>). ¡Ten cuidado con las divisiones por cero y las raíces de números negativos!</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                                <h4 class="font-semibold">Rango (<span class="latex">R<sub>f</sub></span>)</h4>
+                                <p>Son todos los valores posibles de salida (<span class="latex">f(x)</span>). La gráfica es tu mejor amiga para visualizarlo.</p>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="limites" class="content-section">
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-4 text-blue-700">📈 Resolviendo Límites Paso a Paso</h2>
+                    <p class="mb-6 text-gray-600">Un límite describe a qué valor se acerca una función cuando la entrada se acerca a un punto. A veces, la sustitución directa nos da una forma indeterminada como <span class="latex">0/0</span>. Aquí es donde usamos el álgebra. Explora los métodos comunes para resolver estos casos.</p>
+
+                    <div class="space-y-6">
+                        <div class="border rounded-lg p-4">
+                            <h3 class="text-xl font-semibold mb-2">1. Factorización y Simplificación</h3>
+                            <p class="mb-4">Ideal cuando la sustitución directa produce <span class="latex">0/0</span> en funciones polinómicas o racionales.</p>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-lg font-mono text-center mb-4">
+                                    <span class="latex">lim<sub>x→3</sub> (x<sup>2</sup> - 9) / (x - 3)</span>
+                                </p>
+                                <div id="limit1-steps">
+                                    <div class="step"><p><strong>Paso 1:</strong> Factorizamos el numerador: <span class="latex">x<sup>2</sup> - 9 = (x - 3)(x + 3)</span></p></div>
+                                    <div class="step"><p><strong>Paso 2:</strong> Reescribimos y cancelamos términos: <span class="latex">( (x-3)(x+3) ) / (x-3) = x+3</span></p></div>
+                                    <div class="step"><p><strong>Paso 3:</strong> Sustituimos <span class="latex">x=3</span> en la expresión simplificada: <span class="latex">3 + 3 = 6</span></p></div>
+                                    <div class="step"><p class="font-bold text-green-600">Resultado: 6</p></div>
+                                </div>
+                                <button class="limit-button mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600" data-limit="1">Resolver Paso a Paso</button>
+                            </div>
+                        </div>
+
+                        <div class="border rounded-lg p-4">
+                            <h3 class="text-xl font-semibold mb-2">2. Racionalización</h3>
+                            <p class="mb-4">Muy útil para límites con raíces que dan <span class="latex">0/0</span>.</p>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-lg font-mono text-center mb-4">
+                                    <span class="latex">lim<sub>x→0</sub> (√(x+4) - 2) / x</span>
+                                </p>
+                                <div id="limit2-steps">
+                                    <div class="step"><p><strong>Paso 1:</strong> Multiplicamos por el conjugado del numerador: <span class="latex">√(x+4) + 2</span></p></div>
+                                    <div class="step"><p><strong>Paso 2:</strong> Simplificamos el numerador: <span class="latex">(x+4) - 4 = x</span></p></div>
+                                    <div class="step"><p><strong>Paso 3:</strong> Cancelamos la <span class="latex">x</span> del numerador y denominador.</p></div>
+                                    <div class="step"><p><strong>Paso 4:</strong> Sustituimos <span class="latex">x=0</span> en <span class="latex">1 / (√(x+4) + 2)</span>, obteniendo <span class="latex">1/4</span>.</p></div>
+                                    <div class="step"><p class="font-bold text-green-600">Resultado: 1/4</p></div>
+                                </div>
+                                <button class="limit-button mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600" data-limit="2">Resolver Paso a Paso</button>
+                            </div>
+                        </div>
+
+                         <div class="border rounded-lg p-4">
+                            <h3 class="text-xl font-semibold mb-2">3. División por la Potencia más Alta</h3>
+                            <p class="mb-4">Perfecto para límites al infinito (<span class="latex">x→∞</span>) en funciones racionales.</p>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-lg font-mono text-center mb-4">
+                                    <span class="latex">lim<sub>x→∞</sub> (3x<sup>2</sup> + 2x) / (x<sup>2</sup> - 5)</span>
+                                </p>
+                                <div id="limit3-steps">
+                                    <div class="step"><p><strong>Paso 1:</strong> La potencia más alta en el denominador es <span class="latex">x<sup>2</sup></span>. Dividimos todo por <span class="latex">x<sup>2</sup></span>.</p></div>
+                                    <div class="step"><p><strong>Paso 2:</strong> La expresión se convierte en <span class="latex">(3 + 2/x) / (1 - 5/x<sup>2</sup>)</span>.</p></div>
+                                    <div class="step"><p><strong>Paso 3:</strong> Cuando <span class="latex">x→∞</span>, los términos como <span class="latex">2/x</span> y <span class="latex">5/x<sup>2</sup></span> se vuelven 0.</p></div>
+                                    <div class="step"><p><strong>Paso 4:</strong> La expresión se simplifica a <span class="latex">3 / 1</span>.</p></div>
+                                    <div class="step"><p class="font-bold text-green-600">Resultado: 3</p></div>
+                                </div>
+                                <button class="limit-button mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600" data-limit="3">Resolver Paso a Paso</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <section id="consejos" class="content-section">
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-6 text-blue-700">💡 Consejos para el Éxito en Cálculo</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold mb-2">Visualiza Siempre</h3>
+                            <p>Dibuja las funciones. Una gráfica te da más intuición que mil ecuaciones.</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold mb-2">Practica, Practica, Practica</h3>
+                            <p>El cálculo es una habilidad. Resuelve muchos ejercicios para fortalecerla.</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold mb-2">Entiende el "Porqué"</h3>
+                            <p>No te limites a memorizar. Pregúntate qué significa cada concepto.</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold mb-2">Domina tus Bases</h3>
+                            <p>Asegúrate de que tu álgebra y trigonometría estén sólidas. Son tus herramientas.</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold mb-2">No te Rindas</h3>
+                            <p>Encontrarás problemas difíciles. Cada uno es una oportunidad para aprender algo nuevo.</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold mb-2">Pide Ayuda</h3>
+                            <p>Si te atascas, pregunta. Colaborar con otros es una excelente forma de aprender.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Navegación por Pestañas
+            const tabs = document.querySelectorAll('.tab-link');
+            const sections = document.querySelectorAll('.content-section');
+
+            function setActiveTab(tabId) {
+                tabs.forEach(tab => {
+                    if (tab.dataset.tab === tabId) {
+                        tab.classList.add('tab-active');
+                    } else {
+                        tab.classList.remove('tab-active');
+                    }
+                });
+
+                sections.forEach(section => {
+                    if (section.id === tabId) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+            }
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    setActiveTab(e.target.dataset.tab);
+                });
+            });
+            
+            setActiveTab('inicio');
+
+            // Laboratorio de Funciones
+            const functionInput = document.getElementById('functionInput');
+            const plotButton = document.getElementById('plotButton');
+            const functionTableBody = document.getElementById('functionTable');
+            const functionError = document.getElementById('functionError');
+            const chartCanvas = document.getElementById('functionChart');
+            let functionChart = null;
+
+            function plotFunction() {
+                const funcStr = functionInput.value.trim();
+                functionError.textContent = '';
+                if (!funcStr) {
+                    functionError.textContent = 'Por favor, introduce una función.';
+                    return;
+                }
+
+                let userFunc;
+                try {
+                    // Usar el constructor de Function para más seguridad que eval()
+                    userFunc = new Function('x', `return ${funcStr.replace(/\^/g, '**')}`);
+                } catch (e) {
+                    functionError.textContent = 'Función inválida. Usa sintaxis de JavaScript (ej. x**2 para x^2).';
+                    return;
+                }
+
+                const data = { labels: [], datasets: [{ label: `f(x) = ${funcStr}`, data: [], borderColor: '#3b82f6', tension: 0.1, borderWidth: 2, pointRadius: 0 }] };
+                let tableHTML = '';
+                
+                let hasError = false;
+                for (let x = -10; x <= 10; x += 0.5) {
+                    data.labels.push(x.toFixed(1));
+                    try {
+                        const y = userFunc(x);
+                        if (isNaN(y) || !isFinite(y)) {
+                            data.datasets[0].data.push(null);
+                            tableHTML += `<tr><td class="py-1 px-4">${x.toFixed(1)}</td><td class="py-1 px-4 text-gray-400">indef.</td></tr>`;
+                        } else {
+                             data.datasets[0].data.push(y);
+                             tableHTML += `<tr><td class="py-1 px-4">${x.toFixed(1)}</td><td class="py-1 px-4">${y.toFixed(4)}</td></tr>`;
+                        }
+                    } catch (e) {
+                         hasError = true;
+                         break;
+                    }
+                }
+                
+                if(hasError) {
+                    functionError.textContent = 'Error al evaluar la función en algunos puntos.';
+                    return;
+                }
+
+                functionTableBody.innerHTML = tableHTML;
+
+                if (functionChart) {
+                    functionChart.destroy();
+                }
+
+                functionChart = new Chart(chartCanvas, {
+                    type: 'line',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: false, grid: { color: '#e5e7eb' } },
+                            x: { grid: { color: '#e5e7eb' } }
+                        },
+                        plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                        },
+                        hover: {
+                            mode: 'nearest',
+                            intersect: true
+                        }
+                    }
+                });
+            }
+
+            plotButton.addEventListener('click', plotFunction);
+            functionInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    plotFunction();
+                }
+            });
+            
+            // Límites paso a paso
+            const limitButtons = document.querySelectorAll('.limit-button');
+            const limitSteps = {};
+
+            limitButtons.forEach(button => {
+                const limitId = button.dataset.limit;
+                limitSteps[limitId] = {
+                    currentStep: 0,
+                    steps: document.querySelectorAll(`#limit${limitId}-steps .step`),
+                    button: button
+                };
+                
+                button.addEventListener('click', () => {
+                    const limit = limitSteps[limitId];
+                    if (limit.currentStep < limit.steps.length) {
+                        limit.steps[limit.currentStep].classList.add('visible');
+                        limit.currentStep++;
+                        if (limit.currentStep === limit.steps.length) {
+                            limit.button.textContent = "Reiniciar";
+                        }
+                    } else {
+                        // Reset
+                        limit.steps.forEach(step => step.classList.remove('visible'));
+                        limit.currentStep = 0;
+                        limit.button.textContent = "Resolver Paso a Paso";
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
